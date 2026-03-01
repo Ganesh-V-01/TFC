@@ -1,0 +1,67 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+    
+    function isMember() {
+      return getUserData().role == 'member';
+    }
+    
+    function isAdmin() {
+      return getUserData().role == 'admin';
+    }
+
+    // USERS COLLECTION
+    match /users/{userId} {
+      // Anyone can read user profiles (for leaderboard)
+      allow read: if isAuthenticated();
+      
+      // Only admins can update totalStars manually
+      // or members can edit their own basic profile info (but not role/stars)
+      allow update: if isAuthenticated() && (
+        (isAdmin()) || 
+        (request.auth.uid == userId && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role', 'totalStars']))
+      );
+      
+      allow create: if isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // TASKS COLLECTION
+    match /tasks/{taskId} {
+      // Both members and admins can read tasks
+      allow read: if isAuthenticated();
+      // Only admins can create/update/delete tasks
+      allow write: if isAuthenticated() && isAdmin();
+    }
+
+    // SUBMISSIONS COLLECTION
+    match /submissions/{submissionId} {
+      // Members can only read their own submissions
+      // Admins can read all submissions
+      allow read: if isAuthenticated() && (
+        isAdmin() || resource.data.userId == request.auth.uid
+      );
+      
+      // Members can create a submission (status must be pending, stars 0)
+      allow create: if isAuthenticated() && 
+                    isMember() && 
+                    request.resource.data.userId == request.auth.uid &&
+                    request.resource.data.status == 'pending' &&
+                    request.resource.data.starsGiven == 0;
+                    
+      // Only admins can update existing submissions (approve/reject/score)
+      allow update: if isAuthenticated() && isAdmin();
+      
+      // Only admins can delete submissions
+      allow delete: if isAuthenticated() && isAdmin();
+    }
+  }
+}

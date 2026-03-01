@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "486878701682",
+    "project_id": "techno-fusion-club",
+    "storage_bucket": "techno-fusion-club.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:486878701682:android:de4c5c63afc1416101baeb",
+        "android_client_info": {
+          "package_name": "com.technofusionapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBvP7y7Jj5V9RaPPCUuUMm9LYQTrZ_Mse8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
